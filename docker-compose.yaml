@@ -1,0 +1,20 @@
+services:
+  gpu-share:
+    build: .
+    container_name: gpu-share
+    restart: unless-stopped
+    ports:
+      - "8553:8553"
+    volumes:
+      - ./configs/config.yaml:/app/configs/config.yaml:ro
+      - hls_data:/tmp/gpu_share_hls
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, video]
+
+volumes:
+  hls_data:
