@@ -8,7 +8,7 @@
 - [x] Session management with idle timeout
 - [x] Systemd service + Dockerfile deployment
 - [x] API key authentication (optional)
-- [x] HLS tuning: hls_list_size=12, hls_init_time=2 for smoother playback
+- [x] HLS tuning: hls_list_size=4, hls_init_time=2 for smoother playback
 - [x] UFW rule for internal LAN streaming (192.168.80.0/20)
 - [x] CQ 18 for sharper motion (up from CQ 22) — ~970 kbps actual, well under 6000k cap
 
@@ -64,7 +64,7 @@ Fixing items 2-4 in HA core would help some edge cases but **does NOT solve the 
 
 ## Lessons Learned
 
-- `hls_list_size=12` with `hls_init_time=2` gives best playback smoothness — first segments are 2s for fast buffer fill, then 1s for low latency
+- `hls_list_size=4` with `hls_init_time=2` — init fills buffer fast (2s first segment), then 1s segments keep latency low with minimal playlist window
 - CQ 18 is optimal for motion clarity on security cameras — ~970 kbps actual, well under 6000k maxrate cap
 - Echo Show GStreamer (libsoup/2.48.1) requires: Baseline profile, MPEG-TS segments, no gzip
 - NVENC encoder ASIC is independent of CUDA cores — video encoding doesn't impact AI inference

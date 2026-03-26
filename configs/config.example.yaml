@@ -13,7 +13,7 @@ idle_timeout: 120
 
 # HLS tuning
 hls_time: 1          # Segment duration in seconds (1-4)
-hls_list_size: 12    # Number of segments in playlist window
+hls_list_size: 4     # Number of segments in playlist window
 hls_init_time: 2     # First segment duration (seconds) — faster initial buffer fill
 
 # Default resolution when not specified in /start request
