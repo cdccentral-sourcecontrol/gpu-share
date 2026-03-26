@@ -13,7 +13,7 @@ idle_timeout: 120
 
 # HLS tuning
 hls_time: 1          # Segment duration in seconds (1-4)
-hls_list_size: 6     # Number of segments in playlist window
+hls_list_size: 8     # Number of segments in playlist window
 
 # Default resolution when not specified in /start request
 default_resolution: "1920x1080"

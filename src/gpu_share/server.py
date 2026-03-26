@@ -57,7 +57,7 @@ class GpuShareServer:
         self.api_key = self.config.get("api_key")  # None = no auth
         # HLS tuning
         self.hls_time = self.config.get("hls_time", 1)
-        self.hls_list_size = self.config.get("hls_list_size", 6)
+        self.hls_list_size = self.config.get("hls_list_size", 8)
         # session_id -> SessionInfo
         self.sessions = {}
 
