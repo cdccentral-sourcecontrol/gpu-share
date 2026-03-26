@@ -15,7 +15,7 @@
 ### Phase 2: Multi-Backend Encoding
 - [ ] **Backend abstraction** — Config-driven encoder selection: `backend: auto|nvenc|vaapi|qsv|cpu`
 - [ ] **NVENC backend** (current) — NVIDIA GPU, `h264_nvenc`, p5 preset, CQ 22
-- [ ] **VAAPI backend** — Intel/AMD iGPU, `h264_vaapi`, QP 22. Needs `/dev/dri/renderD128`
+- [ ] **VAAPI backend** — AMD iGPU or dedicated Intel Arc, `h264_vaapi`, QP 22. Needs `/dev/dri/renderD128`
 - [ ] **QSV backend** — Intel QuickSync, `h264_qsv`, global_quality 22
 - [ ] **Software fallback** — `libx264`, veryfast preset, CRF 22. Works on any CPU, no GPU needed.
 - [ ] **Auto-detection** — Probe available encoders (`ffmpeg -encoders`), select best: nvenc > vaapi > qsv > cpu
@@ -69,7 +69,7 @@ Fixing items 2-4 in HA core would help some edge cases but **does NOT solve the 
 - Echo Show GStreamer (libsoup/2.48.1) requires: Baseline profile, MPEG-TS segments, no gzip
 - NVENC encoder ASIC is independent of CUDA cores — video encoding doesn't impact AI inference
 - GeForce cards: 5 concurrent NVENC session hard limit
-- Intel HD 530 (i7-6700K iGPU) supports VAAPI/QSV H.264 encode — viable for 2 camera streams without discrete GPU
+- VAAPI/QSV backends are viable on systems with Intel Arc or AMD GPUs (i7-6700K iGPU not viable — Z170 board issues)
 - Software libx264 fallback: ~15-30% CPU per 1080p stream at veryfast, viable for 1-2 streams on modern CPUs
 - UFW doesn't support DNS hostnames — use CIDR ranges or static IPs
 - **Unified display target**: Same transcoded output (1920x1080 Baseline MPEG-TS) works for Echo Show, Google Hub, dashboard, and phones. No need for separate per-target encoding.
