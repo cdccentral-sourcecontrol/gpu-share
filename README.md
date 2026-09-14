@@ -83,4 +83,4 @@ Extracted from a Home Assistant HLS camera-streaming transcoder; published here 
 
 ## License
 
-MIT
+Apache-2.0 — see [LICENSE](LICENSE).
