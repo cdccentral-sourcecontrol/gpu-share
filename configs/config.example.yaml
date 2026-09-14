@@ -1,0 +1,36 @@
+# gpu-share configuration
+# Copy to config.yaml and edit as needed
+
+# Server settings
+host: "0.0.0.0"
+port: 8553
+
+# HLS output directory (segments stored here)
+hls_dir: "/tmp/gpu_share_hls"
+
+# Idle session timeout (seconds) — kill ffmpeg if no segment requests
+idle_timeout: 120
+
+# HLS tuning
+hls_time: 1          # Segment duration in seconds (1-4)
+hls_list_size: 4     # Number of segments in playlist window
+hls_init_time: 2     # First segment duration (seconds) — faster initial buffer fill
+
+# Default resolution when not specified in /start request
+default_resolution: "1920x1080"
+
+# API key authentication (optional — comment out to disable)
+# api_key: "your-secret-api-key-here"
+
+# Custom resolution presets (optional — extends/overrides defaults)
+# Defaults: 1920x1080 (Level 4.0) and 1280x720 (Level 3.1)
+# presets:
+#   3840x2160:
+#     vf: "scale=3840:-2,pad=3840:2160:(ow-iw)/2:(oh-ih)/2:black,format=yuv420p"
+#     level: "5.1"
+#     maxrate: "20000k"
+#     bufsize: "20000k"
+#     profile: "main"
+#     preset: "p4"
+#     cq: 20
+#     fps: 30

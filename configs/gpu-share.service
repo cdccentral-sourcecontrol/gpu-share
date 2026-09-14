@@ -1,0 +1,23 @@
+[Unit]
+Description=GPU Share — NVENC Encoding Proxy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=YOUR_SERVICE_USER
+Group=YOUR_SERVICE_GROUP
+SupplementaryGroups=video render
+WorkingDirectory=/path/to/gpu-share
+ExecStart=/path/to/gpu-share/venv/bin/python -m gpu_share.server
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+ProtectSystem=strict
+ReadWritePaths=/tmp/gpu_share_hls
+NoNewPrivileges=true
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target
