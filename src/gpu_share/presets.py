@@ -8,7 +8,7 @@ DEFAULT_PRESETS = {
         "bufsize": "6000k",
         "profile": "baseline",
         "preset": "p5",
-        "cq": 18,
+        "cq": 22,
         "fps": 25,
     },
     "1280x720": {
@@ -18,7 +18,7 @@ DEFAULT_PRESETS = {
         "bufsize": "3000k",
         "profile": "baseline",
         "preset": "p5",
-        "cq": 18,
+        "cq": 22,
         "fps": 25,
     },
 }

@@ -11,4 +11,3 @@ configs/config.yaml
 /hls_output/
 *.ts
 !tests/*.ts
-.venv/

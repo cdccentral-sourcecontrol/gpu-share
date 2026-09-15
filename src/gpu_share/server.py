@@ -1,7 +1,7 @@
 """GPU Share — NVENC HLS Transcoding HTTP Service.
 
+Generalized from the hls-transcoder on servergen1.cdclocal.
 Provides on-demand RTSP/RTMP to MPEG-TS HLS transcoding using NVIDIA NVENC.
-Originally derived from an internal HLS transcoder deployment.
 
 Configuration loaded from configs/config.yaml or environment variables.
 """
@@ -46,8 +46,6 @@ def load_config():
 class GpuShareServer:
     """Main server managing NVENC transcoding sessions."""
 
-    NVENC_MAX_SESSIONS = 5  # GeForce limit; Quadro/Tesla = unlimited
-
     def __init__(self, config=None):
         self.config = config or {}
         self.hls_dir = self.config.get("hls_dir", "/tmp/gpu_share_hls")
@@ -62,65 +60,6 @@ class GpuShareServer:
         self.hls_list_size = self.config.get("hls_list_size", 8)
         # session_id -> SessionInfo
         self.sessions = {}
-        # Cached at startup by _probe_encoders()
-        self._encoders = []
-        self._decoders = []
-
-    async def _query_gpu_stats(self):
-        """Query NVIDIA GPU utilization via nvidia-smi."""
-        try:
-            proc = await asyncio.create_subprocess_exec(
-                "nvidia-smi",
-                "--query-gpu=name,utilization.gpu,utilization.encoder,"
-                "memory.used,memory.total,memory.free,temperature.gpu,"
-                "driver_version",
-                "--format=csv,noheader,nounits",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=3)
-            if proc.returncode != 0:
-                return None
-            parts = [p.strip() for p in stdout.decode().strip().split(", ")]
-            if len(parts) >= 8:
-                return {
-                    "name": parts[0],
-                    "gpu_utilization_pct": int(parts[1]),
-                    "encoder_utilization_pct": int(parts[2]),
-                    "memory_used_mib": int(parts[3]),
-                    "memory_total_mib": int(parts[4]),
-                    "memory_free_mib": int(parts[5]),
-                    "temperature_c": int(parts[6]),
-                    "driver_version": parts[7],
-                }
-        except Exception:
-            pass
-        return None
-
-    async def _probe_encoders(self):
-        """Probe ffmpeg for available hardware encoders and decoders."""
-        for kind, dest, tags in [
-            ("-encoders", "_encoders", ("nvenc", "vaapi", "qsv")),
-            ("-decoders", "_decoders", ("cuvid", "vaapi", "qsv")),
-        ]:
-            results = []
-            try:
-                proc = await asyncio.create_subprocess_exec(
-                    "ffmpeg", "-hide_banner", kind,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                )
-                stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=5)
-                for line in stdout.decode().splitlines():
-                    for tag in tags:
-                        if tag in line:
-                            parts = line.strip().split()
-                            if len(parts) >= 2:
-                                results.append({"name": parts[1], "description": " ".join(parts[2:])})
-                            break
-            except Exception:
-                pass
-            setattr(self, dest, results)
 
     def _check_auth(self, request):
         """Validate API key if configured."""
@@ -167,7 +106,7 @@ class GpuShareServer:
             "-level", preset["level"],
             "-preset", preset.get("preset", "p5"),
             "-rc", "vbr",
-            "-cq", str(preset.get("cq", 18)),
+            "-cq", str(preset.get("cq", 22)),
             "-maxrate", preset["maxrate"],
             "-bufsize", preset["bufsize"],
             "-force_key_frames", f"expr:gte(t,n_forced*{self.hls_time})",
@@ -252,27 +191,12 @@ class GpuShareServer:
             "alive": v["proc"].returncode is None,
             "resolution": v.get("resolution", "unknown"),
         } for k, v in self.sessions.items()}
-        gpu = await self._query_gpu_stats()
         return web.json_response({
             "status": "ok",
-            "active_streams": len(active),
             "sessions": active,
-            "gpu": gpu,
             "resolutions": list(self.presets.keys()),
-            "nvenc_max_sessions": self.NVENC_MAX_SESSIONS,
             "hls_time": self.hls_time,
             "hls_list_size": self.hls_list_size,
-        })
-
-    async def handle_capabilities(self, request):
-        """Return GPU capabilities: encoders, decoders, GPU info."""
-        gpu = await self._query_gpu_stats()
-        return web.json_response({
-            "gpu": gpu,
-            "encoders": self._encoders,
-            "decoders": self._decoders,
-            "nvenc_max_sessions": self.NVENC_MAX_SESSIONS,
-            "resolutions": list(self.presets.keys()),
         })
 
     async def handle_start(self, request):
@@ -384,7 +308,6 @@ class GpuShareServer:
     def create_app(self):
         app = web.Application()
         app.router.add_get("/health", self.handle_health)
-        app.router.add_get("/capabilities", self.handle_capabilities)
         app.router.add_post("/start/{session_id}", self.handle_start)
         app.router.add_post("/stop/{session_id}", self.handle_stop)
         app.router.add_get("/hls/{session_id}/playlist.m3u8", self.handle_playlist)
@@ -392,7 +315,6 @@ class GpuShareServer:
         app.on_shutdown.append(self.on_shutdown)
 
         async def start_bg(app):
-            await self._probe_encoders()
             app["cleanup_task"] = asyncio.ensure_future(self.cleanup_idle())
 
         async def stop_bg(app):
@@ -408,7 +330,6 @@ class GpuShareServer:
         log.info("gpu-share starting on %s:%d", self.host, self.port)
         log.info("Resolutions: %s | HLS: %ds segments x %d window",
                  ", ".join(self.presets.keys()), self.hls_time, self.hls_list_size)
-        log.info("Endpoints: /health, /capabilities, /start, /stop, /hls")
         web.run_app(app, host=self.host, port=self.port)
 
 

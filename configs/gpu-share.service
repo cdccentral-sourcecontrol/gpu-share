@@ -5,11 +5,11 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=YOUR_SERVICE_USER
-Group=YOUR_SERVICE_GROUP
+User=godunder
+Group=aiusers
 SupplementaryGroups=video render
-WorkingDirectory=/path/to/gpu-share
-ExecStart=/path/to/gpu-share/venv/bin/python -m gpu_share.server
+WorkingDirectory=/opt/gpu-share
+ExecStart=/opt/gpu-share/venv/bin/python -m gpu_share.server
 Restart=on-failure
 RestartSec=5
 
