@@ -79,8 +79,8 @@ PCI passthrough is **exclusive** — the host loses GPU access entirely. This se
 
 ## Origin
 
-Extracted from the [hls-transcoder](https://github.com/cdccentral-sourcecontrol/general/tree/main/applications/homeassistant/config/hls-transcoder) service built for Echo Show camera streaming via Home Assistant on servergen1.cdclocal.
+Extracted from the [hls-transcoder](https://github.com/cdccentral-ops/general/tree/main/applications/homeassistant/config/hls-transcoder) service built for Echo Show camera streaming via Home Assistant on servergen1.cdclocal.
 
 ## License
 
-MIT
+Apache-2.0 — see [LICENSE](LICENSE).
